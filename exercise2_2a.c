@@ -3,13 +3,18 @@
 
 void poly8_bitSlice(poly8x64 r, const poly8 *x)
 {
-  //TODO
+    for (int i = 0; i < 8; ++i) {
+        r[i] = 0;
+        for (int j = 0; j < 8; ++j) {
+            r[i]+=x[i*8 + j];
+        }
+    }
 }
 
 /* reduction polynomial x^8 + x^4 + x^3 + x + 1 */
 void poly8x64_mulMod(poly8x64 r, const poly8x64 a, const poly8x64 b)
 {
-  //TODO
+    //TODO
 }
 
 

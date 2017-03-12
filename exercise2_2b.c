@@ -9,7 +9,12 @@
 
 void poly8_bitSlice_b(poly8x64 r, const poly8 *x)
 {
-    //TODO
+    for (int i = 0; i < 8; ++i) {
+        r[i] = 0;
+        for (int j = 0; j < 8; ++j) {
+            r[i]+=x[i*8 + j];
+        }
+    }
 }
 
 /* reduction polynomial x^8 + x^4 + x^3 + x + 1 */
