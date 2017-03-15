@@ -23,7 +23,14 @@ void poly8x64_mulMod(poly8x64 r, const poly8x64 a, const poly8x64 b)
 
 void poly8x64_unBitSlice(poly8 *r, const poly8x64 x)
 {
-  //TODO
+    unsigned long long tmp;
+    for (int i = 0; i < 8; ++i) {
+        tmp = x[i];
+        for (int j = 7; j >= 0; j--) {
+            r[i*8+j] = (poly8)(tmp%256);
+            tmp = tmp>>8;
+        }
+    }
 }
 
 
