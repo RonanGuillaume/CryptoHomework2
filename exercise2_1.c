@@ -14,12 +14,26 @@ uint32_t modExp(uint32_t a, unsigned char *e) {
 }
 
 uint32_t modExp_V2(uint32_t a, unsigned char *e){
-    int i,j;
-    uint32_t r = 1;
 
-    //todo
+//    Montgomery's ladder
 
-    return r;
+    uint32_t result = 1;
+    uint32_t bufferValue = a;
+
+    for(int i = 3; i >= 0; i--) {
+        for(int j = 7; j >= 0; j--) {
+            if (e[i] & (1<<j)){
+                result *= bufferValue;
+                bufferValue *= bufferValue;
+            }
+            else{
+                bufferValue *= result;
+                result *= result;
+            }
+        }
+    }
+
+    return result;
 }
 
 
