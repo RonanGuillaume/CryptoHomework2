@@ -9,10 +9,11 @@
 
 void poly8_bitSlice_b(poly8x64 r, const poly8 *x)
 {
-    for (int i = 0; i < 8; ++i) {
-        r[i] = 0;
-        for (int j = 0; j < 8; ++j) {
-            r[i]+=x[i*8 + j];
+    for (int i = 0; i < 8; i++) {
+        r[i] = x[i*8];
+        for (int j = 1; j < 8; j++) {
+            r[i] = r[i]<<8;
+            r[i] += x[i*8+j];
         }
     }
 }

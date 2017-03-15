@@ -1,12 +1,13 @@
 #include "exercise2_2a.h"
 
 
-void poly8_bitSlice(poly8x64 r, const poly8 *x)
+void poly8_bitSlice(poly8x64 r, const poly8 x[64])
 {
-    for (int i = 0; i < 8; ++i) {
-        r[i] = 0;
-        for (int j = 0; j < 8; ++j) {
-            r[i]+=x[i*8 + j];
+    for (int i = 0; i < 8; i++) {
+        r[i] = x[i*8];
+        for (int j = 1; j < 8; j++) {
+            r[i] = r[i]<<8;
+            r[i] += x[i*8+j];
         }
     }
 }
@@ -14,7 +15,9 @@ void poly8_bitSlice(poly8x64 r, const poly8 *x)
 /* reduction polynomial x^8 + x^4 + x^3 + x + 1 */
 void poly8x64_mulMod(poly8x64 r, const poly8x64 a, const poly8x64 b)
 {
-    //TODO
+    for (int i = 7; i >= 0; i--){
+
+    }
 }
 
 

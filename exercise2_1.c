@@ -1,6 +1,7 @@
 #include "exercise2_1.h"
 
 uint32_t modExp(uint32_t a, unsigned char *e) {
+
     int i,j;
     uint32_t r = 1;
     for(i=3;i>=0;i--) {

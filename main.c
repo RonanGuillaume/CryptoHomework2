@@ -4,7 +4,7 @@
 
 int main()
 {
-    return main_2a();
     return main_1();
+    return main_2a();
     return main_2b();
 }
