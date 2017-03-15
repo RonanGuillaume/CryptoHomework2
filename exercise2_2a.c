@@ -16,7 +16,7 @@ void poly8_bitSlice(poly8x64 r, const poly8 x[64])
 void poly8x64_mulMod(poly8x64 r, const poly8x64 a, const poly8x64 b)
 {
     for (int i = 7; i >= 0; i--){
-
+        r[i] = (a[i]*b[i])%283;
     }
 }
 

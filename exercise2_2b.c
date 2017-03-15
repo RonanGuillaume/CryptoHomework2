@@ -19,9 +19,11 @@ void poly8_bitSlice_b(poly8x64 r, const poly8 *x)
 }
 
 /* reduction polynomial x^8 + x^4 + x^3 + x + 1 */
-void poly8x64_sqrtMod_b(poly8x64 r, const poly8x64 a, const poly8x64 b)
+void poly8x64_sqrtMod_b(poly8x64 r, const poly8x64 a)
 {
-    //TODO
+    for (int i = 7; i >= 0; i--){
+        r[i] = (a[i]*a[i])%283;
+    }
 }
 
 
@@ -76,7 +78,7 @@ int main_2b()
 
     printf("K.<a> = GF(2**8, name='a', modulus=x^8 + x^4 + x^3 +x + 1)\n");
 
-    poly8x64_sqrtMod_b(vt, va, vb);
+    poly8x64_sqrtMod_b(vt, va);
     poly8x64_unBitSlice_b(r, vt);
 
     for(i=0;i<64;i++)
