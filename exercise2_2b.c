@@ -1,96 +1,175 @@
-#include "exercise2_2b.h"
+#include <stdio.h>
+#include <string.h>
+#include <inttypes.h>
+#include <stdlib.h>
 
-//todo
-/*
- * instead of multiplication performs squaring.
- * Can we reduce the number of bit-logical operations (AND, XOR,. . . )
- * used by squaring compared to multiplication?
- */
+typedef unsigned char poly8;
+typedef unsigned long long poly8x64[8];
 
-void poly8_bitSlice_b(poly8x64 r, const poly8 *x)
+void print1(unsigned char a)
 {
-    for (int i = 0; i < 8; i++) {
-        r[i] = x[i*8];
-        for (int j = 1; j < 8; j++) {
-            r[i] = r[i]<<8;
-            r[i] += x[i*8+j];
+  int i;
+  for (i = 0; i < 8; i++) {
+      printf("%d", !!((a << i) & 0x80));
+  }
+  printf("\n");
+}
+
+void print2(unsigned long long a)
+{
+  int i;
+  for (i = 0; i < 64; i++) {
+      printf("%d", !!((a << i) & 0x8000000000000000));
+  }
+  printf("\n");
+}
+
+void poly8_bitslice(poly8x64 r, const poly8 x[64])
+{
+    // Consider each byte array as an array of 64 binary polynomials.
+    // r[i] is a long long (64 bytes)
+    int i, n;
+    unsigned char bit;
+    for (n = 0; n < 8; n++) {
+        unsigned long long bucket = 0;
+        for(i = 0; i < 64; i++) {
+            // take the nth bit of a polynomial
+            bit = (x[i] >> n) & 1; //(x[i] & (1 << n)) >> n;
+            bucket ^= bit;
+            if (i != 63) bucket <<= 1;
+        }
+        r[n] = bucket;
+    }
+    // Now, r[i] contains i-th factors of all polynomials (64 of them)
+}
+
+
+void poly8x64_unbitslice(poly8 r[64], const poly8x64 x)
+{
+    int i, j, n;
+    unsigned char bit;
+    for (i = 7; i >= 0; i--) {
+        for (n = 0; n < 64; n++) {
+            if (i == 7) {
+              r[63-n] = 0;
+            }
+            // take the nth bit of a polynomial and put it in r[n]
+            bit = (x[i] >> n) & 1;
+            r[63-n] ^= bit;
+            if (i != 0) r[63-n] <<= 1;
+        }
+      }
+}
+
+
+int poly_degree(unsigned long long a)
+{
+    int sol = 0;
+    while (a >>= 1) {
+      sol++;
+    }
+    return sol;
+}
+
+
+unsigned long long ull_mul(unsigned long long a)
+{
+    unsigned long long reduction = 0x0000000000000040LL;
+    unsigned long long sol = 0, tmp = 0;
+    int n, red_degree = poly_degree(reduction);
+
+    for (n = 0; n < 64; n++) {
+        if ((a >> n) & 1) {
+            sol ^= a << n;
+
+            if (n == red_degree) {
+                sol ^= (1 << n) ^ reduction;
+            }
         }
     }
+    return sol;
 }
+
 
 /* reduction polynomial x^8 + x^4 + x^3 + x + 1 */
-void poly8x64_sqrtMod_b(poly8x64 r, const poly8x64 a)
+void poly8x64_mulmod(poly8x64 r, const poly8x64 a, const poly8x64 b)
 {
-    for (int i = 7; i >= 0; i--){
-        r[i] = (a[i]*a[i])%283;
+    unsigned long long poly_tmp;
+    unsigned long long reduction = 0x000000000000011BLL;
+    int i, n, red_degree = poly_degree(reduction);
+
+    for (i = 0; i < 8; i++) {
+
+        poly_tmp = 0;
+        for (n = 0; n < 64; n++) {
+            if ((a[i] >> n) & 1) {
+                poly_tmp ^= a[i] << n;
+
+                if (n == red_degree) {
+                    poly_tmp ^= (1 << n) ^ reduction;
+                }
+        }
+    }
+        r[i] = poly_tmp;
     }
 }
 
 
-void poly8x64_unBitSlice_b(poly8 *r, const poly8x64 x)
+static void poly8mod_print(const poly8 x)
 {
-    unsigned long long tmp;
-    for (int i = 0; i < 8; ++i) {
-        tmp = x[i];
-        for (int j = 7; j >= 0; j--) {
-            r[i*8+j] = (poly8)(tmp%256);
-            tmp = tmp>>8;
-        }
+  int i;
+  int d = 0;
+  printf("K(");
+  for (i = 0; i < 8; i++)
+    if (1 & (x>>i))
+    {
+      if(d) printf(" + ");
+      printf("a^%d",i);
+      d = 1;
     }
-}
 
-
-
-static void poly8mod_print_b(const poly8 x)
-{
-    int i;
-    int d=0;
-    printf("K(");
-    for(i=0;i<8;i++)
-        if(1&(x>>i))
-        {
-            if(d) printf(" + ");
-            printf("a^%d",i);
-            d = 1;
-        }
-    if(d==0) printf("1");
-    printf(")");
+  if (d == 0) printf("1");
+  printf(")");
 }
 
 
 /* Pipe output through sage */
-int main_2b()
+int main()
 {
 
-    poly8 a[64], b[64], r[64];
-    poly8x64 va, vb, vt;
-    int i;
+  poly8 a[64], b[64], r[64];
+  poly8x64 va, vb, vt;
+  int i;
 
-    FILE *urandom = fopen("/dev/urandom","r");
-    for(i=0;i<64;i++)
-    {
-        a[i] = (poly8) fgetc(urandom);
-        b[i] = (poly8) fgetc(urandom);
-    }
+  FILE *urandom = fopen("/dev/urandom","r");
+  for(i=0;i<64;i++)
+  {
+    a[i] = fgetc(urandom);
+    b[i] = fgetc(urandom);
+  }
 
-    poly8_bitSlice_b(va, a);
-    poly8_bitSlice_b(vb, b);
+/*  unsigned long long bla1 = 0x000000000000000CLL;
+  print2(bla1);
+  print2(ull_mul(bla1));
+  return 0;*/
 
-    printf("K.<a> = GF(2**8, name='a', modulus=x^8 + x^4 + x^3 +x + 1)\n");
+  poly8_bitslice(va, a);
+  poly8_bitslice(vb, b);
 
-    poly8x64_sqrtMod_b(vt, va);
-    poly8x64_unBitSlice_b(r, vt);
+  printf("K.<a> = GF(2**8, name='a', modulus=x^8 + x^4 + x^3 +x + 1)\n");
 
-    for(i=0;i<64;i++)
-    {
-        poly8mod_print_b(a[i]);
-        printf(" * ");
-        poly8mod_print_b(b[i]);
-        printf(" - ");
-        poly8mod_print_b(r[i]);
-        printf("\n");
-    }
+  poly8x64_mulmod(vt, va, vb);
+  poly8x64_unbitslice(r, vt);
 
-    fclose(urandom);
-    return 0;
+  for(i = 0; i < 64; i++) {
+      poly8mod_print(a[i]);
+      printf(" * ");
+      poly8mod_print(b[i]);
+      printf(" - ");
+      poly8mod_print(r[i]);
+      printf("\n");
+  }
+  
+  fclose(urandom);
+  return 0;
 }

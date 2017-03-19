@@ -74,7 +74,7 @@ int poly_degree(unsigned long long a)
 
 unsigned long long ull_mul(unsigned long long a, unsigned long long b)
 {
-    unsigned long long reduction = 0x0000000000000022LL;
+    unsigned long long reduction = 0x000000000000011BLL;
     unsigned long long sol = 0, tmp = 0;
     int n, red_degree = poly_degree(reduction);
 
@@ -83,7 +83,7 @@ unsigned long long ull_mul(unsigned long long a, unsigned long long b)
             tmp ^= a << n;
         }
         // If the n-th bit is set and the degree < deg(reduction),
-        // no reduction happes, just add to the result
+        // no reduction happens, just add to the result
         if (((tmp >> n) & 1) && n < red_degree) {
             sol ^= 1 << n;
         }
@@ -101,7 +101,7 @@ unsigned long long ull_mul(unsigned long long a, unsigned long long b)
 void poly8x64_mulmod(poly8x64 r, const poly8x64 a, const poly8x64 b)
 {
     unsigned long long poly_tmp, tmp;
-    unsigned long long reduction = 0x0000000000000022LL;
+    unsigned long long reduction = 0x000000000000011BLL;
     int i, n, red_degree = poly_degree(reduction);
 
     for (i = 0; i < 8; i++) {
@@ -112,7 +112,7 @@ void poly8x64_mulmod(poly8x64 r, const poly8x64 a, const poly8x64 b)
                 tmp ^= a[i] << n;
             }
             // If the n-th bit is set and the degree < deg(reduction),
-            // no reduction happes, just add to the result
+            // no reduction happens, just add to the result
             if (((tmp >> n) & 1) && n < red_degree) {
                 poly_tmp ^= 1 << n;
             }
