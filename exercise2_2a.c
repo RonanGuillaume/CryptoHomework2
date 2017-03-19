@@ -12,7 +12,7 @@ void print1(unsigned char a)
   for (i = 0; i < 8; i++) {
       printf("%d", !!((a << i) & 0x80));
   }
-  printf("\n");
+  //printf("\n");
 }
 
 void print2(unsigned long long a)
@@ -27,14 +27,6 @@ void print2(unsigned long long a)
 void poly8_bitslice(poly8x64 r, const poly8 x[64])
 {
     // Consider each byte array as an array of 64 binary polynomials.
-/*    int i, j;
-    for (i = 0; i < 8; i++) {
-        r[i] = 0;
-        for (j = 0; j < 8; j++) {
-            r[i] |= x[i*8+j];
-            if (j != 7) r[i] <<= 8;
-        }
-    }*/
     // r[i] is a long long (64 bytes)
     int i, n;
     unsigned char bit;
@@ -42,13 +34,31 @@ void poly8_bitslice(poly8x64 r, const poly8 x[64])
         unsigned long long bucket = 0;
         for(i = 0; i < 64; i++) {
             // take the nth bit of a polynomial
-            bit = (x[i] & (1 << n)) >> n;
+            bit = (x[i] >> n) & 1; //(x[i] & (1 << n)) >> n;
             bucket |= bit;
             if (i != 63) bucket <<= 1;
         }
         r[n] = bucket;
     }
     // Now, r[i] contains i-th factors of all polynomials (64 of them)
+}
+
+
+void poly8x64_unbitslice(poly8 r[64], const poly8x64 x)
+{
+    int i, j, n;
+    unsigned char bit;
+    for (i = 7; i >= 0; i--) {
+        for (n = 0; n < 64; n++) {
+            if (i == 7) {
+              r[63-n] = 0;
+            }
+            // take the nth bit of a polynomial and put it in r[n]
+            bit = (x[i] >> n) & 1;
+            r[63-n] |= bit;
+            if (i != 0) r[63-n] <<= 1;
+        }
+      }
 }
 
 
@@ -85,34 +95,7 @@ void poly8x64_mulmod(poly8x64 r, const poly8x64 a, const poly8x64 b)
 
     for (i = 0; i < 8; i++) {
         poly_tmp = ull_mul(a[i], b[i]);
-        print2(poly_tmp); printf("\n");
-    }
-}
-
-
-void poly8x64_unbitslice(poly8 r[64], const poly8x64 x)
-{
-    /*int i, j;
-    unsigned long long bucket = 0;
-    for (i = 0; i < 8; i++) {
-        bucket = x[i];
-        for (j = 0; j < 8; j++) {
-            r[i*8+7-j] = bucket & 0x00000000000000FF;
-            bucket >>= 8;
-        }
-    }*/
-    int i, j, n;
-    unsigned char bit, bucket;
-    for (i = 0; i < 8; i++) {
-      for (j = 0; j < 64; j++) {
-          for (n = 0; n < 64; n++) {
-              // take the nth bit of a polynomial
-              bit = (x[i] & (1 << n)) >> n;
-              bucket |= bit;
-              if (i != 63) bucket <<= 1;
-          }
-      }
-        r[j] = bucket;
+        //print2(poly_tmp); printf("\n");
     }
 }
 
@@ -150,31 +133,15 @@ int main()
     b[i] = fgetc(urandom);
   }
 
-  //for(i = 0; i < 64; i++) print1(a[i]);
-  //printf("\n\n");
-
   poly8_bitslice(va, a);
-
-  //printf("a=%d va=%d\n", sizeof(a), sizeof(va));
-
-  //for(i = 0; i < 8; i++) print2(va[i]);
-  //printf("\n\n");
-
-  poly8x64_unbitslice(r, va);
-
-  //for(i = 0; i < 64; i++) print1(r[i]);
-  //printf("\n\n");
-
   poly8_bitslice(vb, b);
-
-  poly8x64_unbitslice(r, vt);
 
   printf("K.<a> = GF(2**8, name='a', modulus=x^8 + x^4 + x^3 +x + 1)\n");
 
   poly8x64_mulmod(vt, va, vb);
   poly8x64_unbitslice(r, vt);
 
-  for(i = 0;i < 64; i++) {
+  for(i = 0; i < 64; i++) {
       poly8mod_print(a[i]);
       printf(" * ");
       poly8mod_print(b[i]);
