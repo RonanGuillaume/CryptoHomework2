@@ -1,7 +1,4 @@
 #include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
-#include <stdlib.h>
 
 typedef unsigned char poly8;
 typedef unsigned long long poly8x64[8];
@@ -146,7 +143,7 @@ static void poly8mod_print(const poly8 x)
 
 
 /* Pipe output through sage */
-int main()
+int main_2a()
 {
 
   poly8 a[64], b[64], r[64];

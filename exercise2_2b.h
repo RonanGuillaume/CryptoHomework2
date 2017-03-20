@@ -8,10 +8,9 @@
 typedef unsigned char poly8;
 typedef unsigned long long poly8x64[8];
 
-void poly8_bitSlice_b(poly8x64 r, const poly8 *x);
-void poly8x64_sqrtMod_b(poly8x64 r, const poly8x64 a);
-void poly8x64_unBitSlice_b(poly8 *r, const poly8x64 x);
-static void poly8mod_print_b(const poly8 x);
+unsigned long long ull_mul_2b(unsigned long long a);
+void poly8x64_mulmod_2b(poly8x64 r, const poly8x64 a, const poly8x64 b);
+static void poly8mod_print(const poly8 x);
 int main_2b();
 
 #endif //PROJECT_EXERCISE2_2B_H

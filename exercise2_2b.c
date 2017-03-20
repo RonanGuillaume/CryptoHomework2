@@ -1,78 +1,11 @@
 #include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
-#include <stdlib.h>
+#include "exercise2_2a.h"
+#include "exercise2_2b.h"
 
 typedef unsigned char poly8;
 typedef unsigned long long poly8x64[8];
 
-void print1(unsigned char a)
-{
-  int i;
-  for (i = 0; i < 8; i++) {
-      printf("%d", !!((a << i) & 0x80));
-  }
-  printf("\n");
-}
-
-void print2(unsigned long long a)
-{
-  int i;
-  for (i = 0; i < 64; i++) {
-      printf("%d", !!((a << i) & 0x8000000000000000));
-  }
-  printf("\n");
-}
-
-void poly8_bitslice(poly8x64 r, const poly8 x[64])
-{
-    // Consider each byte array as an array of 64 binary polynomials.
-    // r[i] is a long long (64 bytes)
-    int i, n;
-    unsigned char bit;
-    for (n = 0; n < 8; n++) {
-        unsigned long long bucket = 0;
-        for(i = 0; i < 64; i++) {
-            // take the nth bit of a polynomial
-            bit = (x[i] >> n) & 1; //(x[i] & (1 << n)) >> n;
-            bucket ^= bit;
-            if (i != 63) bucket <<= 1;
-        }
-        r[n] = bucket;
-    }
-    // Now, r[i] contains i-th factors of all polynomials (64 of them)
-}
-
-
-void poly8x64_unbitslice(poly8 r[64], const poly8x64 x)
-{
-    int i, j, n;
-    unsigned char bit;
-    for (i = 7; i >= 0; i--) {
-        for (n = 0; n < 64; n++) {
-            if (i == 7) {
-              r[63-n] = 0;
-            }
-            // take the nth bit of a polynomial and put it in r[n]
-            bit = (x[i] >> n) & 1;
-            r[63-n] ^= bit;
-            if (i != 0) r[63-n] <<= 1;
-        }
-      }
-}
-
-
-int poly_degree(unsigned long long a)
-{
-    int sol = 0;
-    while (a >>= 1) {
-      sol++;
-    }
-    return sol;
-}
-
-
-unsigned long long ull_mul(unsigned long long a)
+unsigned long long ull_mul_2b(unsigned long long a)
 {
     unsigned long long reduction = 0x0000000000000040LL;
     unsigned long long sol = 0, tmp = 0;
@@ -92,7 +25,7 @@ unsigned long long ull_mul(unsigned long long a)
 
 
 /* reduction polynomial x^8 + x^4 + x^3 + x + 1 */
-void poly8x64_mulmod(poly8x64 r, const poly8x64 a, const poly8x64 b)
+void poly8x64_mulmod_2b(poly8x64 r, const poly8x64 a, const poly8x64 b)
 {
     unsigned long long poly_tmp;
     unsigned long long reduction = 0x000000000000011BLL;
@@ -114,27 +47,25 @@ void poly8x64_mulmod(poly8x64 r, const poly8x64 a, const poly8x64 b)
     }
 }
 
-
 static void poly8mod_print(const poly8 x)
 {
-  int i;
-  int d = 0;
-  printf("K(");
-  for (i = 0; i < 8; i++)
-    if (1 & (x>>i))
-    {
-      if(d) printf(" + ");
-      printf("a^%d",i);
-      d = 1;
-    }
+    int i;
+    int d = 0;
+    printf("K(");
+    for (i = 0; i < 8; i++)
+        if (1 & (x>>i))
+        {
+            if(d) printf(" + ");
+            printf("a^%d",i);
+            d = 1;
+        }
 
-  if (d == 0) printf("1");
-  printf(")");
+    if (d == 0) printf("1");
+    printf(")");
 }
 
-
 /* Pipe output through sage */
-int main()
+int main_2b()
 {
 
   poly8 a[64], b[64], r[64];
